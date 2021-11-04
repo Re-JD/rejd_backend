@@ -25,6 +25,7 @@ class UserLoginSerializer(serializers.Serializer):
         try:
             payload = JWT_PAYLOAD_HANDLER(user)
             jwt_token = JWT_ENCODE_HANDLER(payload) # 토큰 발행
+            print(jwt_token)
             update_last_login(None, user)
         except User.DoesNotExist:
             raise serializers.ValidationError(
@@ -32,5 +33,29 @@ class UserLoginSerializer(serializers.Serializer):
             )
         return {
             'email': user.email,
-            'token': jwt_token
+            'token': jwt_token,
         }
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        max_length=255, min_length=8, write_only=True
+    )
+
+    class Meta:
+        model = User
+        fields = ['email', 'username', 'password']
+
+    def validate(self, attrs):
+        email = attrs.get('email', '')
+        username = attrs.get('username', '')
+        return attrs
+    
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
+
+class EmailVerificationSerializer(serializers.ModelSerializer):
+    token = serializers.CharField(max_length=555)
+    
+    class Meta:
+        model = User
+        fields = ['token']
