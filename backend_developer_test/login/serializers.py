@@ -4,15 +4,9 @@ from django.contrib.auth import *
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth.models import update_last_login
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
 
-        # Add custom claims
-        token['username'] = user.username
-        return token
 
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=64)
@@ -29,7 +23,7 @@ class UserLoginSerializer(serializers.Serializer):
                 'email': 'None'
             }
         try:
-            token = MyTokenObtainPairSerializer.get_token(user)
+            token = TokenObtainPairSerializer
             update_last_login(None, user)
         except User.DoesNotExist:
             raise serializers.ValidationError(

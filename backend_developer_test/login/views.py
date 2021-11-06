@@ -2,7 +2,7 @@ from django.shortcuts import render
 from .serializers import *
 from rest_framework import generics, status, views
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny ,IsAuthenticated
+from rest_framework.permissions import AllowAny ,IsAuthenticated 
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from .models import User
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -14,11 +14,11 @@ from django.contrib.auth import logout
 from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.authentication import TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 # Create your views here.
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
-    
+    permission_classes = [AllowAny]
     def post(self, request):
         user = request.data
         serializer = self.serializer_class(data=user)
@@ -66,26 +66,10 @@ class VerifyEmail(views.APIView):
         except jwt.exceptions.DecodeError as error:
             return Response({'error':'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 # Create your views here.
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def login(request):
-    if request.method == 'POST':
-        serializer = UserLoginSerializer(data=request.data)
-        if not serializer.is_valid(raise_exception=True):
-            return Response({"message": "Request Body Error."}, status=status.HTTP_409_CONFLICT)
-        if serializer.validated_data['email'] == "None" : 
-            return Response({'message': 'fail'}, status=status.HTTP_200_OK)
-
-        response = {
-            'success': True,
-            'token': serializer.data['token'] # 시리얼라이저에서 받은 토큰 전달
-        }
-        return Response(response, status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def test(request):
-    if request.method == 'POST':
+class TestView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
         return Response("hello", status=status.HTTP_200_OK)
 
