@@ -2,18 +2,19 @@ from django.shortcuts import render
 from .serializers import *
 from rest_framework import generics, status, views
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny ,IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from .models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from .utils import Util
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 import jwt
+from django.contrib.auth import logout
 from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
+from rest_framework.authentication import TokenAuthentication
 # Create your views here.
 class RegisterView(generics.GenericAPIView):
     serializer_class = RegisterSerializer
@@ -80,3 +81,11 @@ def login(request):
             'token': serializer.data['token'] # 시리얼라이저에서 받은 토큰 전달
         }
         return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def test(request):
+    if request.method == 'POST':
+        return Response("hello", status=status.HTTP_200_OK)
+

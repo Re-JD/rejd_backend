@@ -3,10 +3,16 @@ from rest_framework import serializers
 from django.contrib.auth import *
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth.models import update_last_login
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
 
-JWT_PAYLOAD_HANDLER = api_settings.JWT_PAYLOAD_HANDLER
-JWT_ENCODE_HANDLER = api_settings.JWT_ENCODE_HANDLER
+        # Add custom claims
+        token['username'] = user.username
+        return token
 
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=64)
@@ -23,9 +29,7 @@ class UserLoginSerializer(serializers.Serializer):
                 'email': 'None'
             }
         try:
-            payload = JWT_PAYLOAD_HANDLER(user)
-            jwt_token = JWT_ENCODE_HANDLER(payload) # 토큰 발행
-            print(jwt_token)
+            token = MyTokenObtainPairSerializer.get_token(user)
             update_last_login(None, user)
         except User.DoesNotExist:
             raise serializers.ValidationError(
@@ -33,7 +37,7 @@ class UserLoginSerializer(serializers.Serializer):
             )
         return {
             'email': user.email,
-            'token': jwt_token,
+            'token': token,
         }
 
 class RegisterSerializer(serializers.ModelSerializer):
