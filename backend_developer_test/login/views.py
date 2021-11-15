@@ -42,6 +42,7 @@ class RegisterView(generics.GenericAPIView):
 
 class VerifyEmail(views.APIView):
     serializer_class = EmailVerificationSerializer
+    permission_classes = [AllowAny]
     token_param_config = openapi.Parameter(
         'token',
         in_=openapi.IN_QUERY,
@@ -55,6 +56,7 @@ class VerifyEmail(views.APIView):
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS512'])
             user = User.objects.get(id=payload['user_id'])
+
             if not user.is_verified:
                 user.is_verified = True
             user.save()

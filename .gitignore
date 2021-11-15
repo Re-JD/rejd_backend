@@ -4,3 +4,4 @@ secrets.json
 venv/Lib/site-packages/_ruamel_yaml.cp39-win_amd64.pyd
 venv
 .idea
+env/
